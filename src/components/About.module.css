@@ -1,0 +1,78 @@
+.about { padding-block: 64px 120px; }
+
+/* Full container width (the container keeps the side margins) */
+.text p { margin: 0 0 18px; font-size: 17px; line-height: 1.7; color: var(--muted); }
+.text b { font-weight: 600; color: var(--fg); }
+.text .lead { font-size: 19px; line-height: 1.6; color: var(--fg); }
+
+/* ---- hobbies ---- */
+.hobbies {
+  margin: 8px 0 0; padding: 0; list-style: none;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;
+}
+@media (max-width: 520px) { .hobbies { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.hobby { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+
+/* No box: the tile only sizes and centres the art. --c (set in About.tsx) is the hobby's
+   colour, used for the glow on hover. */
+.tile {
+  width: 100%; aspect-ratio: 4 / 3;
+  min-height: 0; /* keep the shape even if the (rotated) art is taller, so all labels line up */
+  display: grid; place-items: end center; /* art sits on the bottom, so all four share a baseline */
+  padding-bottom: 6%; position: relative;
+}
+@media (max-width: 900px) { .tile { aspect-ratio: 1; } }
+.name {
+  font: 500 14px/1.3 var(--font-mono), monospace; /* JetBrains Mono */
+  color: var(--fg); opacity: .8; transition: opacity .2s;
+}
+.hobby:hover .name { opacity: 1; }
+
+/* ---- pixel art ----
+   --px = screen px per image pixel (whole numbers keep pixels even), --s = per-image extra scale,
+   --w / --h = native image size (set in About.tsx). --p is one image pixel on screen. */
+.hobbies { --px: 4px; }
+@media (max-width: 900px) { .hobbies { --px: 3px; } }
+.art {
+  --p: calc(var(--px) * var(--s, 1));
+  position: relative; z-index: 1; display: block;
+  width: calc(var(--w) * var(--p)); height: calc(var(--h) * var(--p));
+  /* drop-shadow follows the pixel shape; on hover it turns into a glow in the hobby colour */
+  filter: drop-shadow(0 6px 8px rgba(18, 20, 42, .2));
+  transition: filter .3s;
+}
+.hobby:hover .art {
+  filter: drop-shadow(0 8px 16px color-mix(in srgb, var(--c) 85%, transparent))
+          drop-shadow(0 2px 4px color-mix(in srgb, var(--c) 60%, transparent));
+}
+.img { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.rotated .img { rotate: 45deg; }
+.fx {
+  position: absolute; width: calc(var(--cols) * var(--p)); height: auto;
+  overflow: visible; opacity: 0; pointer-events: none;
+}
+
+/* ---- hover: pixel-style idle bob (no easing, it jumps between frames) + a per-hobby effect ---- */
+.hobby:hover .art { animation: bob .5s steps(1, end) infinite; }
+@keyframes bob { 0% { translate: 0 0; } 50% { translate: 0 calc(var(--p) * -1); } } /* one image pixel */
+
+/* notes / steam float up */
+.hobby:hover .rise { animation: rise 1.2s steps(4, end) infinite; }
+@keyframes rise { 0% { opacity: 1; translate: 0 var(--p); } 100% { opacity: 0; translate: 0 calc(var(--p) * -3); } }
+
+/* camera: flash blinks */
+.hobby:hover .flash { animation: flash .9s steps(1, end) infinite; }
+@keyframes flash { 0% { opacity: 1; } 25% { opacity: 0; } }
+
+/* popcorn: kernels pop up and drop back */
+.hobby:hover .pop { animation: pop .8s steps(1, end) infinite; }
+@keyframes pop {
+  0%  { opacity: 1; translate: 0 0; }
+  35% { opacity: 1; translate: 0 calc(var(--p) * -2); }
+  70% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hobby:hover .art, .hobby:hover .fx { animation: none; }
+  .hobby:hover .fx { opacity: 1; }
+}

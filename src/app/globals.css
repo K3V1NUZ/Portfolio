@@ -1,0 +1,121 @@
+/* Design tokens shared by every section. The theme is set on <html data-theme>
+   by the script in layout.tsx (saved choice, else system preference). */
+:root {
+  --bg: #ffffff;
+  --fg: #111114;
+  --muted: #62636e;
+  --line: #e2e3e8;
+  --card: #ffffff;
+  --date: #c9cad2;          /* big sticky dates in Experience */
+  --dot: #ffffff;           /* timeline dot, not reached yet */
+  --dot-border: #b8b9c2;
+  --grid-dot: #cfd0d6;      /* hero dotted background */
+  --accent: #3b82f6;
+  --on-accent: #ffffff;
+  --work: #3b6cf6;          /* Experience: work vs school colour-coding */
+  --school: #0f9f6e;
+  --ok: #22b33a;
+  --shadow: 0 1px 0 rgba(17, 17, 20, .08), 0 3px 0 rgba(17, 17, 20, .12), 0 6px 14px -6px rgba(17, 17, 20, .25);
+
+  /* Project cards: pastel backgrounds with dark text in both themes */
+  --ink: #12142a;
+  --c1: #b9c4ff; --c2: #ffd27a; --c3: #a8e6cf; --c4: #ffb3a7; --c5: #d9c2ff;
+  --frame: #ffffff;
+  --bar: #f1f2f6;
+  --ph: rgba(18, 20, 42, .07);
+
+  --container: 1200px;
+  --gutter: clamp(16px, 4vw, 40px);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0c0c10;
+  --fg: #f1f1f4;
+  --muted: #9d9eab;
+  --line: #26272e;
+  --card: #131318;
+  --date: #3a3b45;
+  --dot: #0c0c10;
+  --dot-border: #4a4b55;
+  --grid-dot: #2a2b33;
+  --accent: #5b9bff;
+  --on-accent: #0c0c10;
+  --work: #7f9cff;
+  --school: #3fd29a;
+  --shadow: 0 1px 0 rgba(0, 0, 0, .4), 0 3px 0 rgba(0, 0, 0, .55), 0 6px 14px -6px rgba(0, 0, 0, .8);
+
+  --c1: #8f9df2; --c2: #e8b85a; --c3: #7fcfb1; --c4: #ee9488; --c5: #b89ef0;
+  --frame: #f6f7fb;
+  --bar: #e4e6ee;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.5 var(--font-text), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color .25s, color .25s;
+}
+a { color: inherit; }
+img, svg { display: block; }
+
+.container {
+  max-width: calc(var(--container) + var(--gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* ---- Shared section heading: numbered mono kicker + big condensed title + chip on the right ---- */
+.section-head {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end;
+  gap: 24px 32px; margin-bottom: 48px;
+}
+.kicker {
+  display: flex; align-items: center; gap: 12px; margin: 0 0 14px;
+  font: 500 12px/1 var(--font-mono), monospace; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--muted);
+}
+.kicker b { font-weight: 500; color: var(--accent); }
+.kicker::after { content: ""; width: 40px; height: 1px; background: currentColor; order: 1; }
+.kicker b + span { order: 2; }
+.section-title {
+  margin: 0; font: 800 clamp(56px, 9vw, 96px)/.85 var(--font-head), sans-serif;
+  text-transform: uppercase; letter-spacing: -.01em; text-wrap: balance; /* one line when it fits */
+}
+
+/* ---- Hero UI pieces reused across sections ---- */
+/* raised mono chip ("Open to work", section counts) */
+.chip {
+  display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 6px; box-shadow: var(--shadow);
+  font: 500 13px/1 var(--font-mono), monospace; white-space: nowrap;
+}
+/* raised segmented toggle (language, theme, filters) */
+.seg {
+  display: flex; gap: 2px; padding: 3px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 6px; box-shadow: var(--shadow);
+}
+.seg button {
+  display: grid; place-items: center; min-width: 34px; height: 26px; padding: 0 8px;
+  border: 0; border-radius: 4px; background: transparent; color: var(--muted); cursor: pointer;
+  font: 500 12px/1 var(--font-mono), monospace; letter-spacing: .08em; text-transform: uppercase;
+  transition: background .2s, color .2s;
+}
+.seg button svg { width: 16px; height: 16px; }
+.seg button:hover { color: var(--fg); }
+.seg button[aria-pressed="true"] { background: color-mix(in srgb, var(--fg) 9%, transparent); color: var(--fg); }
+
+/* outlined tag pill from the project cards */
+.pill {
+  display: inline-block; padding: 5px 10px; border: 1.5px solid currentColor; border-radius: 99px;
+  font: 12px/1.2 var(--font-mono), monospace; text-decoration: none; white-space: nowrap;
+}
+
+/* NOTE: no overflow: hidden/auto on body or section wrappers —
+   Experience and Projects rely on position: sticky. */

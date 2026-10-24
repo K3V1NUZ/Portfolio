@@ -1,0 +1,96 @@
+/* One column of sticky full-height cards; inside each, text left + layered mockups right */
+/* Side gap grows with the screen but is capped, so big monitors don't get huge margins
+   (≈120px on a 14" laptop, 160px max) */
+.projects {
+  padding-top: 80px; --gap: 24px;
+  padding-inline: clamp(16px, calc(9vw - 20px), 160px);
+}
+
+
+/* ---------- the stack ---------- */
+.stack { display: grid; gap: var(--gap); padding-bottom: 30vh; }
+
+.card {
+  position: sticky;
+  top: calc(16px + var(--i) * 14px);               /* each card sticks a bit lower -> visible edges */
+  height: calc(100svh - 32px - var(--i) * 14px);
+  max-height: 900px;
+  border-radius: 28px;
+  background: var(--c);
+  color: var(--ink);
+  padding: 22px;
+  display: flex; flex-direction: column; gap: 18px;
+  overflow: hidden;                                  /* clips any mockup that sticks out */
+  transform-origin: 50% 0;
+  will-change: transform;
+  box-shadow: 0 -10px 40px -20px rgba(0, 0, 40, .5);
+}
+.card::after {                                       /* darkening layer, driven by --dim */
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: #0b0c1a; opacity: var(--dim, 0); pointer-events: none;
+}
+
+/* text side */
+.info { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.top { display: flex; justify-content: space-between; gap: 12px; font: 500 12px var(--font-mono), monospace; }
+.info h3 { margin: 0; font: 800 clamp(48px, 12vw, 120px)/.84 var(--font-head), sans-serif; text-transform: uppercase; overflow-wrap: anywhere; }
+.role { margin: 0; display: grid; gap: 2px; font-size: 14px; }
+.role small { font: 500 11px var(--font-mono), monospace; text-transform: uppercase; letter-spacing: .08em; opacity: .7; }
+.tag { margin: 0; font-size: clamp(16px, 2vw, 20px); line-height: 1.4; max-width: 36ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; }
+.meta span, .meta a { color: var(--ink); }
+.meta a { background: var(--ink); border-color: var(--ink); color: var(--c); }
+.meta a:focus-visible, .card:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+/* ---------- picture side: the container-query part ---------- */
+.dev { position: relative; flex: 1; min-height: 190px; container-type: size; }
+
+.browser {
+  position: absolute; left: 0; top: 0;
+  width: min(100cqw, 150cqh);                        /* fits by width OR height, whichever is tighter */
+  margin: 0; border-radius: 12px; overflow: hidden; background: var(--frame);
+  box-shadow: 0 0 0 1px rgba(13,15,31,.06), 0 2px 6px rgba(13,15,31,.06), 0 34px 60px -30px rgba(0,0,40,.5);
+}
+.dev.app .browser { width: min(92cqw, 146cqh); }     /* leave a strip on the right for phones */
+.bar { display: flex; align-items: center; gap: 5px; height: 24px; padding: 0 10px; background: var(--bar); }
+.bar i { width: 7px; height: 7px; border-radius: 50%; background: #d5d7df; flex: none; }
+.bar em {
+  margin: 0 auto; flex: 0 1 220px; min-width: 0; height: 14px; border-radius: 7px; background: #fff;
+  font: normal 9px/14px var(--font-mono), monospace; color: #6b6f80; text-align: center; padding: 0 8px;
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis; transform: translateX(-14px);
+}
+
+.phones {
+  position: absolute; right: 0; bottom: 0;
+  height: min(66cqh, 100cqw);
+  display: flex; align-items: flex-end; gap: 12px;
+}
+.dev:not(.web) .phones { right: 50%; transform: translateX(50%); height: 100cqh; }
+.phone {
+  height: 100%; margin: 0; padding: 3px; background: var(--frame);
+  border-radius: clamp(14px, 4cqh, 26px);
+  box-shadow: 0 0 0 1px rgba(13,15,31,.06), 0 2px 6px rgba(13,15,31,.08), 0 34px 50px -26px rgba(0,0,40,.6);
+}
+.phone:first-child:not(:only-child) { height: 86%; }
+
+/* placeholders standing in for <img> */
+.ph {
+  display: grid; place-items: center; text-align: center;
+  background: repeating-linear-gradient(135deg, transparent 0 10px, var(--ph) 10px 11px), #fafbfd;
+  color: #7a7e95; font: 500 11px/1.3 var(--font-mono), monospace;
+}
+.browser .ph { width: 100%; aspect-ratio: 16 / 10; }
+.phone .ph { height: 100%; aspect-ratio: 9 / 19.5; border-radius: clamp(11px, 3.6cqh, 23px); padding: 6px; }
+
+/* ---------- desktop: two columns ---------- */
+@media (min-width: 900px) {
+  .card { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.25fr); column-gap: 48px; padding: clamp(32px, 3vw, 48px); }
+  .info { justify-content: flex-end; }
+  .top { margin-bottom: auto; }
+  .info h3 { font-size: clamp(64px, 8vw, 120px); }
+  .dev { height: 100%; min-height: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card { transform: none !important; }
+}

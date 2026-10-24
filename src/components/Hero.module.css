@@ -1,0 +1,116 @@
+/* chip / seg styles are shared in globals.css */
+.hero {
+  min-height: 100svh;
+  display: grid; grid-template-rows: auto 1fr auto auto;
+  background: radial-gradient(circle, var(--grid-dot) 1.2px, transparent 1.7px) 0 0 / 26px 26px;
+  position: relative; isolation: isolate; /* keeps the DotGrid canvas behind the content */
+}
+/* The CSS dots are only the first-paint fallback; DotGrid's canvas takes over once mounted */
+.hero[data-dots] { background: none; }
+
+/* ---- top bar ---- */
+.top {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 28px var(--gutter) 0;
+}
+.status { gap: 14px; padding: 7px 14px; font-size: 14px; }
+.status i { width: 10px; height: 10px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 20%, transparent); }
+
+.toggles { display: flex; gap: 12px; }
+.toggles button { padding: 0; }
+button[aria-pressed="false"] .flag { opacity: .55; }
+.flag { width: 24px; height: 16px; border-radius: 2px; overflow: hidden; box-shadow: 0 0 0 1px rgba(0,0,0,.12); transition: opacity .2s; }
+.flag svg { width: 100%; height: 100%; }
+
+/* ---- center ---- */
+.center {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 48px var(--gutter);
+}
+.hey { margin: 0 0 4px; font-size: 18px; font-weight: 500; }
+.name {
+  margin: 0; color: var(--accent);
+  font: 700 clamp(84px, 16vw, 132px)/.95 var(--font-head), sans-serif;
+  text-transform: uppercase; letter-spacing: .06em; text-indent: .06em; /* indent balances the trailing tracking */
+}
+
+/* Name letters: on hover a letter swings up along a short piece of a big circle.
+   It rotates a few degrees around a pivot that sits below it and off to one side
+   (--side, set in Hero.tsx from where the cursor entered), so it rises, drifts sideways
+   and tilts a little. Only the inner .glyph moves; .letter is the fixed hover area. */
+.letter { display: inline-block; cursor: default; }
+.glyph {
+  display: inline-block;
+  transform-origin: calc(50% + var(--side, 1) * 1.4em) calc(50% + .7em); /* pivot ~1.9em away */
+  transition: rotate .5s cubic-bezier(.3, 1.5, .5, 1); /* quick, small overshoot on the way back */
+}
+.letter:hover .glyph {
+  rotate: calc(var(--side, 1) * 4deg);
+  transition: rotate .28s cubic-bezier(.2, .9, .3, 1.3); /* snaps up */
+}
+.intro { margin: 28px 0 0; max-width: 380px; font-size: 15px; line-height: 1.15; }
+.intro b { font-weight: 600; }
+
+.nav {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-top: 36px;
+}
+.navBtn {
+  width: 125px; height: 72px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  /* see-through: the dots show softly behind the button */
+  border: 1px solid var(--fg); border-radius: 8px;
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  background-clip: padding-box; /* keep the see-through fill out from under the border: no fringe at the rounded corners when tilted */
+  text-decoration: none; font-size: 15px;
+  /* No transform / will-change / backdrop-filter at rest: on fractional pixel positions those
+     turn the button into a GPU layer that clips its right border. 3D is only applied on hover. */
+  transition: transform .5s cubic-bezier(.2, .8, .3, 1), box-shadow .3s, background-color .25s, border-color .25s, color .25s;
+}
+.navBtn svg { width: 17px; height: 17px; color: var(--c); transition: transform .25s; }
+/* hover: floats up, stays see-through, with a faint glow in the icon's colour (--c) underneath */
+.navBtn:hover {
+  /* float + tilt: --rx / --ry follow the cursor (set in Hero.tsx) */
+  transform: perspective(500px) translateY(-6px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  background-color: color-mix(in srgb, var(--bg) 70%, transparent); /* not the shorthand: it would reset background-clip */
+  box-shadow: 0 18px 30px -14px color-mix(in srgb, var(--c) 45%, transparent);
+  transition-duration: .15s, .3s, .25s, .25s, .25s; /* follow the cursor quickly while hovering */
+}
+.navBtn:hover svg { transform: translateY(-2px); }
+/* While the cursor is on a button and until it has settled flat again (Hero.tsx toggles .live),
+   keep it on one GPU layer. Promoting/demoting mid-animation re-rasterises the rounded corners,
+   which shows up as a one-frame flicker there. */
+.live { will-change: transform; backface-visibility: hidden; }
+.navBtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* ---- scroll hint ---- */
+.mouse {
+  justify-self: center; margin-bottom: 18px;
+  width: 14px; height: 20px; border: 1.5px solid var(--fg); border-radius: 7px;
+  display: flex; justify-content: center; padding-top: 4px;
+}
+.mouse span { width: 2px; height: 5px; border-radius: 1px; background: var(--fg); animation: wheel 1.8s ease-in-out infinite; }
+@keyframes wheel { 0%, 20% { transform: none; opacity: 1; } 70% { transform: translateY(5px); opacity: 0; } 100% { opacity: 0; } }
+
+/* ---- contact strip ---- */
+.contact {
+  display: flex; flex-wrap: wrap; justify-content: space-around; gap: 12px 28px;
+  padding: 26px var(--gutter); border-top: 2px solid var(--fg); background: var(--bg);
+  font: 400 14px/1 var(--font-mono), monospace;
+}
+.contact > * { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
+.contact svg { width: 16px; height: 16px; }
+.contact a svg:last-child { width: 14px; height: 14px; margin-left: -4px; }
+.contact a:hover { color: var(--accent); }
+
+@media (max-width: 640px) {
+  .nav { display: grid; grid-template-columns: repeat(2, 1fr); width: 100%; max-width: 340px; }
+  .navBtn { width: auto; }
+  .navBtn:last-child { grid-column: 1 / -1; }
+  .contact { flex-direction: column; align-items: flex-start; }
+  .status { font-size: 12px; gap: 10px; padding: 7px 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mouse span { animation: none; }
+  .navBtn { transition: none; }
+  .navBtn:hover { transform: none; }
+  .letter:hover .glyph { rotate: none; }
+}

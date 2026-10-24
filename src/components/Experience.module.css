@@ -1,0 +1,122 @@
+/* Colors and fonts come from the tokens in globals.css; .seg is shared there.
+   Each entry gets --tint from its kind (work / school).
+   IMPORTANT for sticky: no ancestor of this section may have
+   overflow: hidden / auto, or position: sticky stops working. */
+
+.exp { padding-block: 80px; }
+
+.work { --tint: var(--work); }
+.school { --tint: var(--school); }
+
+/* filter buttons double as the colour legend */
+.filters button.work::before, .filters button.school::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--tint); margin-right: 8px;
+}
+.filters button { display: inline-flex; align-items: center; }
+
+/* ---- timeline ---- */
+.timeline { position: relative; padding-bottom: 40px; }
+.track {
+  position: absolute; left: 31px; top: 0; bottom: 0; width: 2px; overflow: hidden;
+  background: linear-gradient(to bottom, transparent, var(--line) 6%, var(--line) 94%, transparent);
+}
+.beam { position: absolute; inset: 0 0 auto 0; height: 0; opacity: 0; background: var(--fg); }
+
+/* Each entry: sticky date on the left (sticks while its card passes, then scrolls on) */
+.item { display: flex; gap: 24px; padding-top: 72px; }
+.track + .item { padding-top: 8px; } /* first entry (comes right after the line) */
+.left {
+  position: sticky; top: 38vh; /* where dates pin: ~middle of the screen */
+  align-self: flex-start; z-index: 2; width: 280px; flex-shrink: 0;
+  padding-left: 68px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+/* Heading scale in this section:
+   1. section title  - condensed 800, huge (shared .section-title)
+   2. timeline date  - condensed 700, mid size, tracked: reads as a marker, not a second title
+   3. card title     - text font 700, normal case: the content heading */
+.date {
+  margin: 0; font: 700 44px/.95 var(--font-head), sans-serif; text-transform: uppercase;
+  letter-spacing: .02em; color: var(--date); text-wrap: balance; transition: color .3s;
+}
+.reached .date { color: var(--fg); }
+.count {
+  font: 500 12px/1 var(--font-mono), monospace; letter-spacing: .1em;
+  font-variant-numeric: tabular-nums; color: var(--muted);
+}
+.reached .count { color: var(--tint); }
+.right { flex: 1; min-width: 0; }
+
+.marker {
+  position: absolute; left: 12px; top: 6px; width: 40px; height: 40px;
+  border-radius: 50%; background: var(--bg); display: grid; place-items: center;
+}
+.marker::after {
+  content: ""; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--bg); border: 2px solid var(--dot-border);
+  transition: background .3s, border-color .3s, box-shadow .3s;
+}
+.reached .marker::after {
+  background: var(--tint); border-color: var(--tint);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--tint) 18%, transparent);
+}
+.dateMobile { display: none; }
+
+/* ---- card: soft tinted panel, colour tells work from school ---- */
+.card {
+  position: relative; overflow: hidden;
+  padding: 28px 28px 28px 32px; display: flex; flex-direction: column; gap: 16px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--tint) 7%, var(--bg));
+  transition: background .25s;
+}
+.card::before { /* colour strip on the left edge */
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--tint);
+}
+.card:hover { background: color-mix(in srgb, var(--tint) 11%, var(--bg)); }
+
+/* head: title + company/school on the left, work/school label in the top-right corner */
+.cardHead { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.kind {
+  display: inline-flex; align-items: center; gap: 8px; flex: none; margin-top: 4px; color: var(--tint);
+  font: 600 11px/1 var(--font-mono), monospace; letter-spacing: .14em; text-transform: uppercase;
+}
+.kind svg { width: 16px; height: 16px; }
+.org { margin: 8px 0 0; font: 400 13px/1.4 var(--font-mono), monospace; color: var(--muted); }
+
+.title {
+  margin: 0; font: 700 clamp(21px, 2vw, 25px)/1.2 var(--font-text), sans-serif;
+  letter-spacing: -.02em; text-wrap: pretty; /* one line when it fits */
+}
+
+.points { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.points li { display: flex; gap: 12px; font-size: 15px; line-height: 1.6; max-width: 62ch; color: var(--muted); }
+.points li::before {
+  content: ""; width: 5px; height: 5px; margin-top: 10px; flex-shrink: 0;
+  border-radius: 50%; background: var(--tint);
+}
+
+/* skills from this role, right under the points */
+.badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.badges span {
+  padding: 5px 9px; border-radius: 6px;
+  background: color-mix(in srgb, var(--tint) 12%, transparent);
+  font: 500 12px/1 var(--font-mono), monospace; color: var(--fg);
+}
+
+/* Phone: no sticky panel, date sits above each card */
+@media (max-width: 767px) {
+  .item, .track + .item { gap: 0; padding-top: 56px; }
+  .left { width: 0; padding: 0; }
+  .date, .count { display: none; }
+  .right { padding-left: 64px; }
+  .dateMobile {
+    display: block; margin: 0 0 12px; font: 700 28px/1 var(--font-head), sans-serif;
+    text-transform: uppercase; letter-spacing: .02em; color: var(--fg);
+  }
+  .marker { top: -6px; }
+  .card { padding: 22px 22px 22px 26px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marker::after, .card, .date { transition: none; }
+}
