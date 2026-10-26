@@ -42,6 +42,11 @@
 .meta a { background: var(--ink); border-color: var(--ink); color: var(--c); }
 .meta a:focus-visible, .card:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
 
+/* cards with a case study open it on click */
+.clickable { cursor: pointer; }
+.meta .more { background: var(--ink); border-color: var(--ink); color: var(--c); transition: translate .2s; }
+.clickable:hover .more { translate: 4px 0; }
+
 /* ---------- picture side: the container-query part ---------- */
 .dev { position: relative; flex: 1; min-height: 190px; container-type: size; }
 
@@ -82,12 +87,35 @@
 .browser .ph { width: 100%; aspect-ratio: 16 / 10; }
 .phone .ph { height: 100%; aspect-ratio: 9 / 19.5; border-radius: clamp(11px, 3.6cqh, 23px); padding: 6px; }
 
+/* real screenshots instead of the placeholders (.screen reuses the phone .ph size and rounding) */
+.shot { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+.phone .screen { display: block; padding: 0; object-fit: cover; background: none; }
+
+/* landscape phones (video mode): wide and short, overlapping the bottom of the browser.
+   Browser + phone are centred vertically as one group so the picture area doesn't look empty.
+   --browser-w / --browser-h mirror the browser frame (16:10 screenshot + 24px bar),
+   --phone-h is the phone's height, --top the group's offset from the top.
+   The browser is capped at 120cqh wide so there's always room for the phone below it. */
+.dev.landscape {
+  --browser-w: min(100cqw, 120cqh);
+  --browser-h: calc(var(--browser-w) * .625 + 24px);
+  --phone-h: min(42cqh, 34cqw);
+  --top: max(0px, (100cqh - var(--browser-h) - var(--phone-h) * .65) / 2);
+}
+.dev.app.landscape .browser { width: var(--browser-w); top: var(--top); }
+.landscape .phones {
+  height: var(--phone-h);
+  top: min(calc(var(--top) + var(--browser-h) - var(--phone-h) * .35), calc(100cqh - var(--phone-h)));
+  bottom: auto;
+}
+.landscape .phone .ph { aspect-ratio: 19.5 / 9; }
+
 /* ---------- desktop: two columns ---------- */
 @media (min-width: 900px) {
-  .card { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.25fr); column-gap: 48px; padding: clamp(32px, 3vw, 48px); }
+  .card { display: grid; grid-template-columns: minmax(0, .75fr) minmax(0, 1.45fr); column-gap: 40px; padding: clamp(32px, 3vw, 48px); }
   .info { justify-content: flex-end; }
   .top { margin-bottom: auto; }
-  .info h3 { font-size: clamp(64px, 8vw, 120px); }
+  .info h3 { font-size: clamp(52px, 5.6vw, 110px); overflow-wrap: normal; } /* sized for the narrower text column; never split words */
   .dev { height: 100%; min-height: 0; }
 }
 

@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import ProjectModal from "./ProjectModal";
+import PartyGames from "./projects/PartyGames";
 import styles from "./Projects.module.css";
 
 type Project = {
@@ -13,7 +15,11 @@ type Project = {
   tags: string[];
   link?: { href: string; label: string };
   url?: string;          // shown in the browser bar; omit for an app-only card
+  desktop?: string;      // browser screenshot in /public (16:10, e.g. 1600 × 1000)
   phones: 0 | 1 | 2;
+  phone?: string;        // phone screenshot in /public (9:19.5, or 19.5:9 when landscape)
+  landscape?: boolean;   // phones turned sideways (video mode)
+  details?: React.ReactNode; // case study; when set, clicking the card opens it in a window
 };
 
 // Draft content: edit freely. Screenshots will replace the striped placeholders.
@@ -40,11 +46,14 @@ const PROJECTS: Project[] = [
     phones: 2,
   },
   {
-    id: "four", title: "Project four", kind: "Web + app · 5 parts", year: "2024",
-    role: "Your role on this project",
-    description: "Browser plus a single phone. The lone phone keeps its full height.",
-    tags: ["Express", "PostgreSQL"], link: { href: "#", label: "Visit site ↗" },
-    url: "project-four.app", phones: 1,
+    id: "party-games", title: "Party Games", kind: "Multiplayer web game · 3 games", year: "2026",
+    role: "Solo project · design, front end and game server",
+    description: "A Jackbox-style party platform: the TV shows the game and everyone's phone becomes the controller. No apps, no accounts, just scan the QR code.",
+    tags: ["TypeScript", "React", "Socket.IO", "Node.js", "Zod"],
+    link: { href: "https://github.com/K3V1NUZ/party-game", label: "View code on GitHub ↗" },
+    url: "192.168.2.207:5173/host/GSXS", desktop: "/projects/project-four-desktop.webp",
+    phones: 1, phone: "/projects/project-four-phone.png", landscape: true,
+    details: <PartyGames />,
   },
   {
     id: "five", title: "Project five", kind: "Dashboard · 2 parts", year: "2024",
@@ -64,6 +73,9 @@ const RESET_AFTER = 600; // ms of no scrolling before the charge drains to 0
 export default function Projects() {
   const sectionRef = useRef<HTMLElement>(null);
   const stackRef = useRef<HTMLDivElement>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
+  const openIndex = PROJECTS.findIndex((p) => p.id === openId);
+  const open = openIndex >= 0 ? PROJECTS[openIndex] : null;
 
   useEffect(() => {
     const section = sectionRef.current!;
@@ -147,9 +159,12 @@ export default function Projects() {
     };
 
     // Wheel / trackpad: scrolling builds a "charge"; snap once it passes SNAP_DISTANCE
+    // While a case-study window is open, leave scrolling and keys to it
+    const modalOpen = () => document.querySelector("dialog[open]") !== null;
+
     let charge = 0, lastWheel = 0, lastAbs = 0, lastDir = 0, locked = false;
     const onWheel = (e: WheelEvent) => {
-      if (e.ctrlKey) return; // let pinch-zoom through
+      if (e.ctrlKey || modalOpen()) return; // let pinch-zoom / the open window through
       const dir = Math.sign(e.deltaY);
       if (!dir) return;
 
@@ -177,14 +192,14 @@ export default function Projects() {
     // Keyboard: arrows, Page Up/Down, space
     const onKey = (e: KeyboardEvent) => {
       const dir = ({ ArrowDown: 1, PageDown: 1, " ": e.shiftKey ? -1 : 1, ArrowUp: -1, PageUp: -1 } as Record<string, number>)[e.key];
-      if (!dir || !paged(dir)) return;
-      if (e.key === " " && (document.activeElement as HTMLElement | null)?.closest("a, button")) return;
+      if (!dir || modalOpen() || !paged(dir)) return;
+      if (e.key === " " && (document.activeElement as HTMLElement | null)?.closest("a, button, [role='button']")) return;
       e.preventDefault(); page(dir);
     };
 
     // Touch: a proper swipe turns one page
     let touch: { y: number; mode: "page" | "free" | null } | null = null;
-    const onTouchStart = (e: TouchEvent) => { touch = { y: e.touches[0].clientY, mode: null }; };
+    const onTouchStart = (e: TouchEvent) => { touch = modalOpen() ? null : { y: e.touches[0].clientY, mode: null }; };
     const onTouchMove = (e: TouchEvent) => {
       if (!touch) return;
       const dy = touch.y - e.touches[0].clientY;
@@ -244,8 +259,17 @@ export default function Projects() {
           <article
             key={p.id}
             tabIndex={0}
-            className={styles.card}
+            className={`${styles.card} ${p.details ? styles.clickable : ""}`}
             style={{ "--c": COLORS[i % COLORS.length], "--i": i } as React.CSSProperties}
+            {...(p.details && {
+              role: "button",
+              "aria-haspopup": "dialog" as const,
+              "aria-label": `${p.title}: open case study`,
+              onClick: (e: React.MouseEvent) => { if (!(e.target as Element).closest("a")) setOpenId(p.id); },
+              onKeyDown: (e: React.KeyboardEvent) => {
+                if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpenId(p.id); }
+              },
+            })}
           >
             <div className={styles.info}>
               <div className={styles.top}><span>{p.kind}</span><span>{p.year}</span></div>
@@ -254,21 +278,34 @@ export default function Projects() {
               <p className={styles.tag}>{p.description}</p>
               <div className={styles.meta}>
                 {p.tags.map((t) => <span key={t} className="pill">{t}</span>)}
-                {p.link && <a href={p.link.href} className="pill">{p.link.label}</a>}
+                {p.link && (
+                  <a href={p.link.href} className="pill" {...(p.link.href.startsWith("http") && { target: "_blank", rel: "noopener" })}>
+                    {p.link.label}
+                  </a>
+                )}
+                {p.details && <span className={`pill ${styles.more}`} aria-hidden="true">Read case study →</span>}
               </div>
             </div>
 
-            <div className={`${styles.dev} ${p.url ? styles.web : ""} ${p.phones ? styles.app : ""}`} aria-hidden="true">
+            <div className={`${styles.dev} ${p.url ? styles.web : ""} ${p.phones ? styles.app : ""} ${p.landscape ? styles.landscape : ""}`} aria-hidden="true">
               {p.url && (
                 <figure className={styles.browser}>
                   <span className={styles.bar}><i /><i /><i /><em>{p.url}</em></span>
-                  <div className={styles.ph}>Desktop screenshot<br />1600 × 1000</div>
+                  {p.desktop
+                    // eslint-disable-next-line @next/next/no-img-element -- plain img keeps the frame's aspect-ratio sizing simple
+                    ? <img src={p.desktop} alt="" className={styles.shot} />
+                    : <div className={styles.ph}>Desktop screenshot<br />1600 × 1000</div>}
                 </figure>
               )}
               {p.phones > 0 && (
                 <div className={styles.phones}>
                   {Array.from({ length: p.phones }, (_, n) => (
-                    <figure key={n} className={styles.phone}><div className={styles.ph}>Phone<br />900 × 1950</div></figure>
+                    <figure key={n} className={styles.phone}>
+                      {p.phone
+                        // eslint-disable-next-line @next/next/no-img-element -- sized by the phone frame
+                        ? <img src={p.phone} alt="" className={`${styles.ph} ${styles.screen}`} />
+                        : <div className={styles.ph}>Phone<br />{p.landscape ? "1950 × 900" : "900 × 1950"}</div>}
+                    </figure>
                   ))}
                 </div>
               )}
@@ -276,6 +313,16 @@ export default function Projects() {
           </article>
         ))}
       </div>
+
+      {open && (
+        <ProjectModal
+          title={open.title} kind={open.kind} year={open.year} role={open.role} tags={open.tags} link={open.link}
+          color={COLORS[openIndex % COLORS.length]}
+          onClose={() => setOpenId(null)}
+        >
+          {open.details}
+        </ProjectModal>
+      )}
     </section>
   );
 }

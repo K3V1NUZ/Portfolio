@@ -1,0 +1,59 @@
+.carousel { position: relative; display: grid; gap: 14px; outline: none; }
+.carousel:focus-visible .track { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+/* one slide per view, snapping; scrollbar hidden */
+.track {
+  display: flex; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+  scrollbar-width: none; border-radius: 14px;
+}
+.track::-webkit-scrollbar { display: none; }
+.slide { flex: 0 0 100%; margin: 0; scroll-snap-align: center; display: grid; place-items: center; padding: 2px; }
+
+/* the screenshot, optionally inside a browser window like on the project cards */
+.frame { width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: var(--frame); }
+.framed { box-shadow: 0 2px 6px rgba(13, 15, 31, .06), 0 24px 40px -24px rgba(0, 0, 40, .45); }
+.bar { display: flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px; background: var(--bar); }
+.bar i { width: 8px; height: 8px; border-radius: 50%; background: #d5d7df; flex: none; }
+.bar em {
+  margin: 0 auto; flex: 0 1 260px; min-width: 0; height: 16px; border-radius: 8px; background: #fff;
+  font: normal 10px/16px var(--font-mono), monospace; color: #6b6f80; text-align: center; padding: 0 8px;
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis; transform: translateX(-16px);
+}
+.img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+.ph {
+  aspect-ratio: 16 / 10; display: grid; place-items: center; text-align: center;
+  background: repeating-linear-gradient(135deg, transparent 0 10px, var(--ph) 10px 11px), #fafbfd;
+  color: #7a7e95; font: 500 12px/1.4 var(--font-mono), monospace;
+}
+
+/* arrows sit on the image edges, vertically centred on the picture (dots excluded) */
+.arrow {
+  position: absolute; top: calc(50% - 18px); translate: 0 -50%;
+  width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
+  border: 0; background: color-mix(in srgb, var(--bg) 85%, transparent); color: var(--fg);
+  box-shadow: 0 4px 14px -4px rgba(0, 0, 0, .35); backdrop-filter: blur(4px);
+  transition: background .2s, scale .2s;
+}
+.arrow svg { width: 22px; height: 22px; }
+.arrow:hover { background: var(--bg); scale: 1.06; }
+.arrow:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.prev { left: 12px; }
+.next { right: 12px; }
+
+.dots { display: flex; justify-content: center; gap: 8px; }
+.dots button {
+  width: 8px; height: 8px; padding: 0; border: 0; border-radius: 99px; cursor: pointer;
+  background: var(--line); transition: width .25s, background .25s;
+}
+.dots button[aria-current="true"] { width: 24px; background: var(--line); position: relative; overflow: hidden; }
+/* the active dot fills up while autoplay counts down (frozen when paused) */
+.dots button[aria-current="true"]::after {
+  content: ""; position: absolute; inset: 0; background: var(--fg); border-radius: inherit;
+  transform-origin: left; animation: fill var(--autoplay) linear forwards paused;
+}
+.playing .dots button[aria-current="true"]::after { animation-play-state: running; }
+.carousel:not(.playing) .dots button[aria-current="true"]::after { animation: none; }
+@keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.dots button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) { .track { scroll-behavior: auto; } }
